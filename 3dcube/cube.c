@@ -59,7 +59,7 @@ void rotate_cube(Cube *cube, float rx, float ry, float rz) {
     cube->y[i] -= centerY;
     cube->z[i] -= centerZ;
   }
-  
+
   for (size_t i = 0; i < 8; ++i) {
     float pos[3] = {cube->x[i], cube->y[i], cube->z[i]};
     float new_pos[3] = {0, 0, 0};
@@ -94,11 +94,43 @@ void rotate_cube(Cube *cube, float rx, float ry, float rz) {
   }
 }
 
+void move_cube(Cube *cube, float moveX, float moveY, float moveZ) {
+  for (size_t i = 0; i < 8; ++i) {
+    cube->x[i] += moveX;
+    cube->y[i] += moveY;
+    cube->z[i] += moveZ;
+  }
+}
+
+Cord getPerspective(float x, float y, float z) {
+  float add = z * 0.00001f;
+  float w = WINDOW_WIDTH / 2.0f;
+  float h = WINDOW_HEIGHT / 2.0f;
+
+  float centeredX = x - w;
+  float centeredY = y - h;
+
+  float a = w / (w + add);
+  float b = h / (h + add);
+
+  float nx = (centeredX * a) + w;
+  float ny = (centeredY * b) + h;
+  Cord c = {nx, ny, x, y, z};
+  return c;
+}
+
 void project_cube(Cube *cube, Cord *cords, Projection p) {
   switch (p) {
   case ORTHOGRAPHIC: {
     for (size_t i = 0; i < 8; ++i) {
-      Cord c = {cube->x[i], cube->y[i]};
+      Cord c = {cube->x[i], cube->y[i], cube->x[i], cube->y[i], cube->z[i]};
+      cords[i] = c;
+    }
+    break;
+  }
+  case PERSPECTIVE: {
+    for (size_t i = 0; i < 8; ++i) {
+      Cord c = getPerspective(cube->x[i], cube->y[i], cube->z[i]);
       cords[i] = c;
     }
     break;
